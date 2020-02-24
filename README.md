@@ -1,6 +1,6 @@
 # minesweeper-API
 
-## Resources and rationale,
+## Resources and rationale
 
 I will use POST verb for resource creation
 
@@ -18,10 +18,10 @@ Json Body:
 
 responses: 201 (created) or 400 (bad request). 
 The API responds with 400 if any of the following conditions is NOT met:
-  a) 0 < mines <= x_dimension * y_dimension (mines fit in the board)
-  b) 0 < x_dimension <= x_max
-  c) 0 < y_dimension <= y_max
-  d) 0 < seconds <= max_seconds
+1. 0 < mines <= x_dimension * y_dimension (mines fit in the board)
+2. 0 < x_dimension <= x_max
+3. 0 < y_dimension <= y_max
+4. 0 < seconds <= max_seconds
 
 In case the API responds with 201. It returns a header Location with the URL of the newly created resource, ie: /games/32193453. The response payload is:
 {
