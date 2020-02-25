@@ -39,23 +39,62 @@ The response payload has the parameters that were effectively used to create the
 
 ## Cells resources
 A game has cells, they have coordinates.
-There are revealed and unrevealed cells. I will treat them as different resources because they have different state and different things can be done with them.
+When a game is created, cells get created with the game.
 
-## Unrevealed cells
-When a game is created, all cells are unrevealed. Thus, there is no method for creating unrevealed cells.
-An unrevealed cell might have a flag. I model this with a flag attribute that has any of these values: {"red", "question-mark", "none"}
+Cells are initially unrevealed, and might get revealed later upon users requests.
 
-An unrevealed-cell example:
+Revealed cells have neighbouring mines quantity. Unrevealed cells might have flags.
+The client can change flags in unrevealed cells but can do nothing on revealed ones.
+
+Cells is a polymorphic resource since there are slightly different attributes and behaviour in each case. 
+
+In order to model this, I will use a common cell resource, with coordinates.
+A kind attribute is helpful to tell if the cell is revealed or not. Since we might want to have more than 2 kinds, I will use a string code for the kind. kind in {"revealed", "unrevealed"}
+
+In case the cell is unrevealed, there will be a sub-resource for the unrevealed-cell-state (the flag is there). 
+If the cell is revealed, then it has an extra attribute: neighbouring-mines-quantity.
+
+An unrevealed cell example:
 { x: 8, 
   y: 3, 
-  flag: "red"
+  **kind: "unrevealed",**
   \_links: { 
-    self: {href: "/games/34534534/unrevealed-cells/sdfs"}
+    self: {href: "/games/34534534/cells/sdfs"},
+    **unrevealed-cell-state: {href: "/games/34534534/cells/sdfs/unrevealed-cell-state"**
    }
 }
 
-GET /games/34534534/unrevealed-cells
-Gets a collection of unrevealed-cell resource. This API is probably only used when resuming an old game.
+A revealed cell example:
+{ x: 8, 
+  y: 3, 
+  **kind: "revealed",
+  neighbouring-mines-quantity: 2,**
+  \_links: { 
+    self: {href: "/games/34534534/cells/sdfs"}
+   }
+}
+
+GET /games/34534534/cells
+Gets the collection of cells.
+
+Response status code: 404 if the game does not exist, 
+Return status code 200 if game exists, and response payload is
+{
+  items: [<cell-object1>, <cell-object2>]
+}
+
+
+## Unrevealed cell state
+It has a flag with any of these values: {"red", "question-mark", "none"}
+
+An unrevealed cell state example:
+{ 
+  flag: "red",
+  \_links: { 
+    self: {href: "/games/34534534/cells/sdfs/unrevealed-cell-state"},
+    cell: {href: "/games/34534534/cells/sdfs"}
+   }
+}
 
 Response status code: 404 if the game does not exist, 
 Response status code: 200 if the game exists, and response payload is of the form
@@ -72,7 +111,7 @@ PUT /games/34534534/unrevealed-cells/sdfs
 ## Revealed cells
 
 Revealed cells dont have flags. 
-A revealed-cell has information on how many neighbouring mines there are. Also, it tells if it has a mine or not.
+A revealed-cell has information on how many neighbouring mines there are.
 
 A revealed-cell example:
 { x: 8, 
@@ -92,9 +131,15 @@ GET /games/34534534/revealed-cells/sdfs
 
 
 ## Revealing a cell
-In order to reveal a cell, the client has to delete an unrevealed-cell. By defining it this way, I don-t need to send and parse payload for reveling cells.
+In order to reveal a cell, the client has to delete an unrevealed-cell. By defining it this way, I don't need to send and parse payload for reveling cells.
 
-When revealing a cell, many other cells might be revealed as well. the response has the collection
+When revealing a cell, if it has a mine, it will exploit. Otherwise, the cell is revealed and potentially adjacent cells are revelead as well.
+
+DELETE /games/<gameId>/unrevealed-cells/<cellId>
+
+Return status code 204, if a mine has been found (game over)
+Return status code 400, if the game is over
+Return status code 200 if cells are revealed, and a collection of revealed cells is 
 
 
 
