@@ -3,98 +3,114 @@
 ## Some assumptions, definitions, and disclaimer
  
 I will use POST verb for resource creation.
+
 I will use JSON + HAL when I feel it is necessary. (http://stateless.co/hal_specification.html)
-I assume that collections of objects are small and wont use pagination
-Definition is not complete due to time restriction. But main APIs are described enough. 
-If I had more time, I would use swagger to document APIs.
+
+Assumption: collections of objects are small and use of pagination is not necessary
+
+Disclaimer: Definition is not complete due to time restriction. But main APIs are described enough. If I had more time, I would use swagger to document APIs.
 
 ## Games resource
 A game is created with board dimensions, duration and quantity of mines selected by the user. Alternatively these parameters could be optional, and some predefined default values are used if not provided by the user.
 
-POST /games: creates a new game.
-Json Body:
-{
+    POST /games: creates a new game.
+    Json Body:
+    {
 	x_dimension: Int,
 	y_dimension: Int, 
 	mines: Int,
 	seconds: Int
-}
+    }
 
-responses: 201 (created) or 400 (bad request). 
+Responses: status code 201 (created) or 400 (bad request). 
+
 The API responds with 400 if any of the following conditions is NOT met:
 * 0 < mines <= x_dimension * y_dimension (mines fit in the board)
 * 0 < x_dimension <= x_max
 * 0 < y_dimension <= y_max
 * 0 < seconds <= max_seconds
 
-In case the API responds with 201. It returns a header Location with the URL of the newly created resource, ie: /games/32193453. The response payload is:
-{
-	x_dimension: Int,
-	y_dimension: Int, 
-	mines: Int,
-	second: Int
-}
+In case the API responds with status code 201, it returns a header Location with the URL of the newly created resource, ie: /games/32193453. The response payload is:
+
+    {
+        x_dimension: Int,
+        y_dimension: Int, 
+        mines: Int,
+        second: Int
+    }
 
 The response payload has the parameters that were effectively used to create the game, not necessarily the ones requested by the user.
 
 ## Cells resources
 A game has cells, they have coordinates.
+
 When a game is created, cells get created with the game.
+
 
 Cells are initially unrevealed, and might get revealed later upon users requests.
 
 Revealed cells have neighbouring mines quantity. Unrevealed cells might have flags.
+
 The client can change flags in unrevealed cells but can do nothing on revealed ones.
+
 
 Cells is a polymorphic resource since there are slightly different attributes and behaviour in each case. 
 
 In order to model this, I will use a common cell resource, with coordinates.
+
 A kind attribute is helpful to tell if the cell is revealed or not. Since we might want to have more than 2 kinds, I will use a string code for the kind. kind in {"revealed", "unrevealed"}
 
 In case the cell is unrevealed, there will be a sub-resource for the unrevealed-cell-state (the flag is there). 
+
 If the cell is revealed, then it has an extra attribute: neighbouring-mines-quantity.
 
 An unrevealed cell example:
-{ x: 8, 
-  y: 3, 
-  **kind: "unrevealed",**
-  \_links: { 
-    self: {href: "/games/34534534/cells/sdfs"},
-    **unrevealed-cell-state: {href: "/games/34534534/cells/sdfs/unrevealed-cell-state"**
-   }
-}
+
+    {
+        x: 8, 
+        y: 3, 
+        kind: "unrevealed",
+        _links: { 
+            self: {href: "/games/34534534/cells/sdfs"},
+            unrevealed-cell-state: {href: "/games/34534534/cells/sdfs/unrevealed-cell-state"}
+        }
+    }
+
 
 A revealed cell example:
-{ x: 8, 
-  y: 3, 
-  **kind: "revealed",
-  neighbouring-mines-quantity: 2,**
-  \_links: { 
-    self: {href: "/games/34534534/cells/sdfs"}
-   }
-}
+
+
+    {
+        x: 8, 
+        y: 3, 
+        kind: "revealed",
+        neighbouring-mines-quantity: 2,
+        _links: { 
+            self: {href: "/games/34534534/cells/sdfs"}
+        }
+    }
+
 
 GET /games/34534534/cells
 Gets the collection of cells.
 
-Response status code: 404 if the game does not exist, 
-Return status code 200 if game exists, and response payload is
-{
-  items: [<cell-object1>, <cell-object2>]
-}
+Response status code: 404, if the game does not exist, 
+Response status code: 200, if game exists, and response payload is
+    { items: [<cell-object1>, <cell-object2>] }
 
 
 ## Unrevealed cell state
 It has a flag with any of these values: {"red", "question-mark", "none"}
 
 An unrevealed cell state example:
-{ 
-  flag: "red",
-  \_links: { 
-    self: {href: "/games/34534534/cells/sdfs/unrevealed-cell-state"},
-    cell: {href: "/games/34534534/cells/sdfs"}
-   }
-}
+
+    {
+        flag: "red",
+        _links: { 
+            self: {href: "/games/34534534/cells/sdfs/unrevealed-cell-state"},
+            cell: {href: "/games/34534534/cells/sdfs"}
+        }
+    }
 
 Response status code: 404 if the game does not exist, 
 Response status code: 200 if the game exists, and response payload is of the form
