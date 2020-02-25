@@ -201,4 +201,3 @@ I would put reasonable limits to the
 We could put user authentication info in request headers, so the described APIs wont change much.
 A game is created for an auntheticated user. We could opt to allow a user to see games of other users, but changing a cell is only allowed to the game owner. If a user tries to change another user cell, it gets a response with status code 403.
 
-
