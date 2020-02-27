@@ -1,5 +1,8 @@
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
+import models.Todo
+import repositories.InMemoryTodoRepository
+
 import scala.concurrent.Await
 import scala.util.{Failure, Success, Try}
 

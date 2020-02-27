@@ -1,8 +1,11 @@
+package repositories
+
 import java.util.UUID
 
-import scala.concurrent.{ExecutionContext, Future}
+import models.{CreateTodo, Todo, UpdateTodo}
+import repositories.TodoRepository.TodoNotFound
 
-import TodoRepository.TodoNotFound
+import scala.concurrent.{ExecutionContext, Future}
 
 trait TodoRepository {
 

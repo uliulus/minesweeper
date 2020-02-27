@@ -1,4 +1,6 @@
 import akka.http.scaladsl.server.{Directives, Route}
+import models.{CreateTodo, UpdateTodo}
+import repositories.TodoRepository
 
 trait Router {
   def route: Route

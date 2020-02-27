@@ -1,3 +1,6 @@
+import models.{CreateTodo, Todo, UpdateTodo}
+import repositories.TodoRepository
+
 import scala.concurrent.Future
 
 trait TodoMocks {

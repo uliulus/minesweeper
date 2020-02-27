@@ -1,3 +1,5 @@
+import models.{CreateTodo, UpdateTodo}
+
 trait Validator[T] {
   def validate(t: T): Option[ApiError]
 }
