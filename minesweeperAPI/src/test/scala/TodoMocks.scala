@@ -1,5 +1,6 @@
-import models.{CreateTodo, Todo, UpdateTodo}
+import models.Todo
 import repositories.TodoRepository
+import rest.entities.{CreateTodo, UpdateTodo}
 
 import scala.concurrent.Future
 

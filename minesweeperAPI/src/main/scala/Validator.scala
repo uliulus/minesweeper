@@ -1,4 +1,4 @@
-import models.{CreateTodo, UpdateTodo}
+import rest.entities.{CreateTodo, UpdateTodo}
 
 trait Validator[T] {
   def validate(t: T): Option[ApiError]

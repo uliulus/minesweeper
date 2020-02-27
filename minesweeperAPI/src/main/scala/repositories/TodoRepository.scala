@@ -2,8 +2,9 @@ package repositories
 
 import java.util.UUID
 
-import models.{CreateTodo, Todo, UpdateTodo}
+import models.Todo
 import repositories.TodoRepository.TodoNotFound
+import rest.entities.{CreateTodo, UpdateTodo}
 
 import scala.concurrent.{ExecutionContext, Future}
 
