@@ -3,7 +3,7 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.server.Directives
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import org.scalatest.{Matchers, WordSpec}
-import rest.{ApiError, TodoDirectives}
+import rest.resourceRouters.{ApiError, TodoDirectives}
 
 class TodoDirectivesSpec extends WordSpec with Matchers with ScalatestRouteTest with Directives with TodoDirectives {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._

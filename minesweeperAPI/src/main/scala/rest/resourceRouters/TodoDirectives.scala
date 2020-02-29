@@ -1,8 +1,9 @@
-package rest
+package rest.resourceRouters
+
+import akka.http.scaladsl.server.{Directive1, Directives}
 
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
-import akka.http.scaladsl.server.{Directive1, Directives}
 
 trait TodoDirectives extends Directives {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._

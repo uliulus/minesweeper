@@ -1,4 +1,4 @@
-package rest
+package rest.resourceRouters
 
 import rest.entities.{CreateTodo, UpdateTodo}
 

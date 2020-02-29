@@ -1,4 +1,4 @@
-package rest
+package rest.resourceRouters
 
 import akka.http.scaladsl.server.{Directive0, Directives}
 
