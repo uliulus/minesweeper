@@ -3,6 +3,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import models.Todo
 import org.scalatest.{Matchers, WordSpec}
 import repositories.InMemoryTodoRepository
+import rest.{ApiError, TodoRouter}
 
 class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest with TodoMocks {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._

@@ -1,3 +1,5 @@
+package rest
+
 import rest.entities.{CreateTodo, UpdateTodo}
 
 trait Validator[T] {

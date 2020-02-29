@@ -5,6 +5,7 @@ import akka.http.scaladsl.testkit.ScalatestRouteTest
 import models.Todo
 import org.scalatest.{Matchers, WordSpec}
 import repositories.InMemoryTodoRepository
+import rest.{ApiError, TodoRouter}
 import rest.entities.UpdateTodo
 
 class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTest with TodoMocks {

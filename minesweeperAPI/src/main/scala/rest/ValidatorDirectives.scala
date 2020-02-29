@@ -1,3 +1,5 @@
+package rest
+
 import akka.http.scaladsl.server.{Directive0, Directives}
 
 trait ValidatorDirectives extends Directives {

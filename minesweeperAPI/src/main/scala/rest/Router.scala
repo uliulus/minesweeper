@@ -1,3 +1,5 @@
+package rest
+
 import akka.http.scaladsl.server.{Directives, Route}
 import repositories.TodoRepository
 import rest.entities.{CreateTodo, UpdateTodo}
