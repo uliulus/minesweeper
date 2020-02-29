@@ -1,18 +1,20 @@
 package rest
 
 import akka.http.scaladsl.server.{Directives, Route}
-import repositories.TodoRepository
+import repositories.{RepositoryService, TodoRepository}
 import rest.entities.{CreateTodo, UpdateTodo}
 
 trait Router {
   def route: Route
 }
 
-class TodoRouter(todoRepository: TodoRepository) extends Router with Directives with TodoDirectives with ValidatorDirectives {
+trait TodoRouter extends Directives with TodoDirectives with ValidatorDirectives {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
 
-  override def route: Route = pathPrefix("todos") {
+  val todoRepository: TodoRepository
+
+  def todoRouter: Route = pathPrefix("todos") {
     pathEndOrSingleSlash {
       get {
         handleWithGeneric(todoRepository.all()) { todos =>
@@ -56,4 +58,10 @@ class TodoRouter(todoRepository: TodoRepository) extends Router with Directives 
       }
     }
   }
+}
+
+
+class MineSweeperAPI(repos: RepositoryService) extends Router with TodoRouter {
+  override lazy val todoRepository: TodoRepository = repos.todoRepository
+  override def route: Route = todoRouter
 }

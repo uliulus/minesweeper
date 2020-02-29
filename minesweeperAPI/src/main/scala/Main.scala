@@ -1,8 +1,7 @@
 import akka.actor.ActorSystem
 import akka.stream.ActorMaterializer
-import models.Todo
-import repositories.InMemoryTodoRepository
-import rest.TodoRouter
+import repositories.RepositoryService
+import rest.MineSweeperAPI
 
 import scala.concurrent.Await
 import scala.util.{Failure, Success, Try}
@@ -16,12 +15,7 @@ object Main extends App {
   implicit val materializer: ActorMaterializer = ActorMaterializer()
   import system.dispatcher
 
-  val todoRepository = new InMemoryTodoRepository(Seq(
-    Todo("1", "Buy eggs", "Ran out of eggs, buy a dozen", false),
-    Todo("2", "Buy milk", "The cat is thirsty!", true),
-    Todo("3", "Buy rice", "I'm starving!", true),
-  ))
-  val router = new TodoRouter(todoRepository)
+  val router = new MineSweeperAPI(RepositoryService())
   val server = new Server(router, host, port)
 
   val binding = server.bind()

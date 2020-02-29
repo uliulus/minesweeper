@@ -2,8 +2,8 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import models.Todo
 import org.scalatest.{Matchers, WordSpec}
-import repositories.InMemoryTodoRepository
-import rest.{ApiError, TodoRouter}
+import repositories.{InMemoryTodoRepository, RepositoryService}
+import rest.{ApiError, MineSweeperAPI, TodoRouter}
 
 class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest with TodoMocks {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
@@ -20,7 +20,7 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
     "return all the todos" in {
       val repository = new InMemoryTodoRepository(todos)
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Get("/todos") ~> router.route ~> check {
         status shouldBe StatusCodes.OK
@@ -31,7 +31,7 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
     "return all the done todos" in {
       val repository = new InMemoryTodoRepository(todos)
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Get("/todos/done") ~> router.route ~> check {
         status shouldBe StatusCodes.OK
@@ -42,7 +42,7 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
     "return all the pending todos" in {
       val repository = new InMemoryTodoRepository(todos)
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Get("/todos/pending") ~> router.route ~> check {
         status shouldBe StatusCodes.OK
@@ -53,7 +53,7 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
     "handle repository failure in the todos route" in {
       val repository = new FailingRepository
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Get("/todos") ~> router.route ~> check {
         status shouldBe ApiError.generic.statusCode
@@ -64,7 +64,7 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
     "handle repository failure in the done todos route" in {
       val repository = new FailingRepository
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Get("/todos/done") ~> router.route ~> check {
         status shouldBe ApiError.generic.statusCode
@@ -75,7 +75,7 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
     "handle repository failure in the pending todos route" in {
       val repository = new FailingRepository
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Get("/todos/pending") ~> router.route ~> check {
         status shouldBe ApiError.generic.statusCode

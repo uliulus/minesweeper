@@ -4,8 +4,8 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import models.Todo
 import org.scalatest.{Matchers, WordSpec}
-import repositories.InMemoryTodoRepository
-import rest.{ApiError, TodoRouter}
+import repositories.{InMemoryTodoRepository, RepositoryService}
+import rest.{ApiError, MineSweeperAPI, TodoRouter}
 import rest.entities.UpdateTodo
 
 class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTest with TodoMocks {
@@ -29,7 +29,7 @@ class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTes
 
     "update a todo with valid data" in {
       val repository = new InMemoryTodoRepository(Seq(testTodo))
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Put(s"/todos/$todoId", testUpdateTodo) ~> router.route ~> check {
         status shouldBe StatusCodes.OK
@@ -42,7 +42,7 @@ class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTes
 
     "return not found with non existent todo" in {
       val repository = new InMemoryTodoRepository(Seq(testTodo))
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Put("/todos/1", testUpdateTodo) ~> router.route ~> check {
         status shouldBe ApiError.todoNotFound("1").statusCode
@@ -53,7 +53,7 @@ class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTes
 
     "not update a todo with invalid data" in {
       val repository = new InMemoryTodoRepository(Seq(testTodo))
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Put(s"/todos/$todoId", testUpdateTodo.copy(title = Some(""))) ~> router.route ~> check {
         status shouldBe ApiError.emptyTitleField.statusCode
@@ -64,7 +64,7 @@ class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTes
 
     "handle repository failure when updating todos" in {
       val repository = new FailingRepository
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Put(s"/todos/$todoId", testUpdateTodo) ~> router.route ~> check {
         status shouldBe ApiError.generic.statusCode

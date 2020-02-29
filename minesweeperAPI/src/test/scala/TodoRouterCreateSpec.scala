@@ -2,8 +2,8 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import models.Todo
 import org.scalatest.{Matchers, WordSpec}
-import repositories.InMemoryTodoRepository
-import rest.{ApiError, TodoRouter}
+import repositories.{InMemoryTodoRepository, RepositoryService}
+import rest.{ApiError, MineSweeperAPI, TodoRouter}
 import rest.entities.CreateTodo
 
 class TodoRouterCreateSpec extends WordSpec with Matchers with ScalatestRouteTest with TodoMocks {
@@ -19,7 +19,7 @@ class TodoRouterCreateSpec extends WordSpec with Matchers with ScalatestRouteTes
 
     "create a todo with valid data" in {
       val repository = new InMemoryTodoRepository()
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Post("/todos", testCreateTodo) ~> router.route ~> check {
         status shouldBe StatusCodes.OK
@@ -31,7 +31,7 @@ class TodoRouterCreateSpec extends WordSpec with Matchers with ScalatestRouteTes
 
     "not create a todo with invalid data" in {
       val repository = new FailingRepository
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Post("/todos", testCreateTodo.copy(title = "")) ~> router.route ~> check {
         status shouldBe ApiError.emptyTitleField.statusCode
@@ -42,7 +42,7 @@ class TodoRouterCreateSpec extends WordSpec with Matchers with ScalatestRouteTes
 
     "handle repository failure when creating todos" in {
       val repository = new FailingRepository
-      val router = new TodoRouter(repository)
+      val router = new MineSweeperAPI(new RepositoryService(repository))
 
       Post("/todos", testCreateTodo) ~> router.route ~> check {
         status shouldBe ApiError.generic.statusCode
