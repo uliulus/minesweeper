@@ -11,7 +11,7 @@ Assumption: collections of objects are small and use of pagination is not necess
 Disclaimer: Definition is not complete due to time restriction. But main APIs are described enough. If I had more time, I would use swagger to document APIs.
 
 ## Games resource
-A game is created with board dimensions, duration and quantity of mines selected by the user. Alternatively these parameters could be optional, and some predefined default values are used if not provided by the user.
+A game is created with board dimensions, duration and quantity of mines selected by the client. Alternatively these parameters could be optional, and some predefined default values are used if not provided by the user.
 
     POST /games: creates a new game.
     Json Body:
@@ -30,7 +30,9 @@ The API responds with 400 if any of the following conditions is NOT met:
 * 0 < y_dimension <= y_max
 * 0 < seconds <= max_seconds
 
-In case the API responds with status code 201, it returns a header Location with the URL of the newly created resource, ie: /games/32193453. The response payload is:
+In case the API responds with status code 201, it returns a header Location with the URL of the newly created resource, ie: /games/32193453. 
+
+The response payload is:
 
     {
         x_dimension: Int,
@@ -39,26 +41,33 @@ In case the API responds with status code 201, it returns a header Location with
         second: Int
     }
 
-The response payload has the parameters that were effectively used to create the game, not necessarily the ones requested by the user.
+The response payload has the parameters that were effectively used to create the game, not necessarily the ones requested by the client.
 
-## Cells resources
+## Cells resources 
 A game has cells, they have coordinates.
-
 When a game is created, cells get created with the game.
 
 
-Cells are initially unrevealed, and might get revealed later upon users requests.
+Cells are initially unrevealed. The resource for an unrevealed cell wont show information about the cell having a mine or not.
 
-Revealed cells have neighbouring mines quantity. Unrevealed cells might have flags.
+The client can put a flag in an unrevealed cell (question-mark or red flag), and can remove it or change it as well.
 
-The client can change flags in unrevealed cells but can do nothing on revealed ones.
+The client can request a cell to be revealed. This can result in:
+* a mine is being hit, and then the game is over. 
+* the cell gets revealed and potentially many other neighboaring cells get revealed as well. The game is not ended in this case.
 
 
+Revealed cells have neighbouring mines quantity.
+
+
+The client can do nothing on revealed cells, except query them.
+
+## Cell resource model
 Cells is a polymorphic resource since there are slightly different attributes and behaviour in each case. 
 
 In order to model this, I will use a common cell resource, with coordinates.
 
-A kind attribute is helpful to tell if the cell is revealed or not. Since we might want to have more than 2 kinds, I will use a string code for the kind. kind in {"revealed", "unrevealed"}
+A kind attribute is helpful to tell the type of cell. Since we might want to have more than 2 kinds in the future, I will use a string code for the kind. Initially kind is any of these: {"revealed", "unrevealed"}
 
 In case the cell is unrevealed, there will be a sub-resource for the unrevealed-cell-state (the flag is there). 
 
@@ -124,26 +133,6 @@ PUT /games/34534534/unrevealed-cells/sdfs
 { flag: "question-mark" }
 
 
-## Revealed cells
-
-Revealed cells dont have flags. 
-A revealed-cell has information on how many neighbouring mines there are.
-
-A revealed-cell example:
-{ x: 8, 
-  y: 3, 
-  neighbouring-mines: 2,
-  has_mine: true,
-  \_links: { 
-    self: {href: "/games/34534534/revealed-cells/sdfs"}
-   }
-}
-
-Nothing can be done on revealed cells. 
-The only methods supported are GET for collections and for an item
-ie:
-GET /games/34534534/revealed-cells
-GET /games/34534534/revealed-cells/sdfs
 
 
 ## Revealing a cell
