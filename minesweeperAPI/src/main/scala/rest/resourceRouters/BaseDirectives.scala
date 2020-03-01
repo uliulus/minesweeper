@@ -5,7 +5,7 @@ import akka.http.scaladsl.server.{Directive1, Directives}
 import scala.concurrent.Future
 import scala.util.{Failure, Success}
 
-trait TodoDirectives extends Directives {
+trait BaseDirectives extends Directives {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
 

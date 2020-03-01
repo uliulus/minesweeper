@@ -4,7 +4,7 @@ import akka.http.scaladsl.server.{Directives, Route}
 import repositories.TodoRepository
 import rest.entities.{CreateTodo, UpdateTodo}
 
-trait TodoRouter extends Directives with TodoDirectives with ValidatorDirectives {
+trait TodoRouter extends Directives with BaseDirectives with ValidatorDirectives {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
   import io.circe.generic.auto._
 
