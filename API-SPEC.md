@@ -8,7 +8,7 @@ I will use JSON + HAL when I feel it is necessary. (http://stateless.co/hal_spec
 
 Assumption: collections of objects are small and use of pagination is not necessary
 
-Disclaimer: Definition is not complete due to time restriction. But main APIs are described enough. If I had more time, I would use swagger to document APIs.
+Disclaimer: Definition is not complete due to time restriction. But main APIs are described enough. If I had more time, I would had used swagger to document APIs.
 
 ## Games resource
 A game is created with board dimensions, duration and quantity of mines selected by the client. Alternatively these parameters could be optional, and some predefined default values are used if not provided by the user.
@@ -48,26 +48,26 @@ A game has cells, they have coordinates.
 When a game is created, cells get created with the game.
 
 
-Cells are initially unrevealed. The resource for an unrevealed cell wont show information about the cell having a mine or not.
+Cells are initially unrevealed. The resource for an unrevealed cell won't show information about the cell having a mine or not.
 
-The client can put a flag in an unrevealed cell (question-mark or red flag), and can remove it or change it as well.
+The client can put or remove a flag in an unrevealed cell (question-mark or red flag), and it can also change a flag by the other.
 
-The client can request a cell to be revealed. This can result in:
+The client can request a cell to be revealed. Processing this request can result in:
 * a mine is being hit, and then the game is over. 
-* the cell gets revealed and potentially many other neighboaring cells get revealed as well. The game is not ended in this case.
+* the cell gets revealed and potentially many other neighbouring cells get revealed as well. The game goes on in this case.
 
 
 Revealed cells have neighbouring mines quantity.
 
 
-The client can do nothing on revealed cells, except query them.
+The client can do nothing on revealed cells, except querying them.
 
-## Cell resource model
+## Cell resource modelling
 Cells is a polymorphic resource since there are slightly different attributes and behaviour in each case. 
 
 In order to model this, I will use a common cell resource, with coordinates.
 
-A kind attribute is helpful to tell the type of cell. Since we might want to have more than 2 kinds in the future, I will use a string code for the kind. Initially kind is any of these: {"revealed", "unrevealed"}
+A kind attribute will tell the type of cell. Since we might want to have more than two kinds in the future, I will use a string code for the kind, and not a boolean. Initially kind will be any of these: {"revealed", "unrevealed"}
 
 In case the cell is unrevealed, there will be a sub-resource for the unrevealed-cell-state (the flag is there). 
 
@@ -99,16 +99,25 @@ A revealed cell example:
         }
     }
 
+We will implement retrieving all cells and retrieving one.
 
-GET /games/34534534/cells
-Gets the collection of cells.
+* GET /games/<gameId>/cells
+   
+Retrieves the collection of all cells in game <gameId>
 
 Response status code: 404, if the game does not exist, 
+
 Response status code: 200, if game exists, and response payload is
-    { items: [<cell-object1>, <cell-object2>] }
+	
+{ items: [<cell-object1>, <cell-object2>] }
 
+* GET /games/<gameId>/cells/<cellId>
 
+Retrieves cell <cellId> in the game <gameId>
+	
 ## Unrevealed cell state
+It is a subresource of a cell. 
+
 It has a flag with any of these values: {"red", "question-mark", "none"}
 
 An unrevealed cell state example:
@@ -120,12 +129,6 @@ An unrevealed cell state example:
             cell: {href: "/games/34534534/cells/sdfs"}
         }
     }
-
-Response status code: 404 if the game does not exist, 
-Response status code: 200 if the game exists, and response payload is of the form
-{
-  items: [<unrevelead-cell-object1>, <unrevelead-cell-object1>]
-}
 	
 The client can update a flag attribute.
 
@@ -134,8 +137,12 @@ PUT /games/34534534/unrevealed-cells/sdfs
 
 
 
-
 ## Revealing a cell
+
+2 options for revealing a cell, I have to select one:
+* DELETE unrevealed-cell-state (pros: simpler to implement, it does not have body in the request)
+* UPDATE unrevealed-cell, changing the kind (pros, more intuitive)
+
 In order to reveal a cell, the client has to delete an unrevealed-cell. By defining it this way, I don't need to send and parse payload for reveling cells.
 
 When revealing a cell, if it has a mine, it will exploit. Otherwise, the cell is revealed and potentially adjacent cells are revelead as well.
