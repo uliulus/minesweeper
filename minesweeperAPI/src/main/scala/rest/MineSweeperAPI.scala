@@ -1,10 +1,15 @@
 package rest
 
 import akka.http.scaladsl.server.Route
-import repositories.{RepositoryService, TodoRepository}
-import rest.resourceRouters.TodoRouter
+import repositories.RepositoryService
+import rest.controllers.games.GamesController
+import rest.resourceRouters.GamesRouter
 
-class MineSweeperAPI(repos: RepositoryService) extends Router with TodoRouter {
-  override lazy val todoRepository: TodoRepository = repos.todoRepository
-  override def route: Route = todoRouter
+import scala.concurrent.ExecutionContext
+
+class MineSweeperAPI(repos: RepositoryService)
+                    (implicit ec: ExecutionContext)
+  extends Router with GamesRouter {
+  override lazy val gamesController: GamesController = new GamesController(repos.gamesRepository)
+  override def route: Route = gamesRouter
 }
