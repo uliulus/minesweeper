@@ -2,9 +2,8 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import models.Todo
 import org.scalatest.{Matchers, WordSpec}
-import repositories.{InMemoryTodoRepository, RepositoryService}
-import rest.MineSweeperAPI
-import rest.resourceRouters.ApiError
+import repositories.{InMemoryTodoRepository, TodoRepository}
+import rest.resourceRouters.{ApiError, TodoRouter}
 
 class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest with TodoMocks {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
@@ -17,13 +16,15 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
   private val todos = Seq(doneTodo, pendingTodo)
 
+  class TestTodoRouterClass(repo: TodoRepository) extends TodoRouter { override val todoRepository = repo}
+
   "A TodoRouter" should {
 
     "return all the todos" in {
       val repository = new InMemoryTodoRepository(todos)
-      val router = new MineSweeperAPI(new RepositoryService(repository))
+      val router = new TestTodoRouterClass(repository)
 
-      Get("/todos") ~> router.route ~> check {
+      Get("/todos") ~> router.todoRouter ~> check {
         status shouldBe StatusCodes.OK
         val respTodos = responseAs[Seq[Todo]]
         respTodos shouldBe todos
@@ -32,9 +33,9 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
     "return all the done todos" in {
       val repository = new InMemoryTodoRepository(todos)
-      val router = new MineSweeperAPI(new RepositoryService(repository))
+      val router = new TestTodoRouterClass(repository)
 
-      Get("/todos/done") ~> router.route ~> check {
+      Get("/todos/done") ~> router.todoRouter ~> check {
         status shouldBe StatusCodes.OK
         val respTodos = responseAs[Seq[Todo]]
         respTodos shouldBe Seq(doneTodo)
@@ -43,9 +44,9 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
     "return all the pending todos" in {
       val repository = new InMemoryTodoRepository(todos)
-      val router = new MineSweeperAPI(new RepositoryService(repository))
+      val router = new TestTodoRouterClass(repository)
 
-      Get("/todos/pending") ~> router.route ~> check {
+      Get("/todos/pending") ~> router.todoRouter ~> check {
         status shouldBe StatusCodes.OK
         val respTodos = responseAs[Seq[Todo]]
         respTodos shouldBe Seq(pendingTodo)
@@ -54,9 +55,9 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
     "handle repository failure in the todos route" in {
       val repository = new FailingRepository
-      val router = new MineSweeperAPI(new RepositoryService(repository))
+      val router = new TestTodoRouterClass(repository)
 
-      Get("/todos") ~> router.route ~> check {
+      Get("/todos") ~> router.todoRouter ~> check {
         status shouldBe ApiError.generic.statusCode
         val resp = responseAs[String]
         resp shouldBe ApiError.generic.message
@@ -65,9 +66,9 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
     "handle repository failure in the done todos route" in {
       val repository = new FailingRepository
-      val router = new MineSweeperAPI(new RepositoryService(repository))
+      val router = new TestTodoRouterClass(repository)
 
-      Get("/todos/done") ~> router.route ~> check {
+      Get("/todos/done") ~> router.todoRouter ~> check {
         status shouldBe ApiError.generic.statusCode
         val resp = responseAs[String]
         resp shouldBe ApiError.generic.message
@@ -76,9 +77,9 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
 
     "handle repository failure in the pending todos route" in {
       val repository = new FailingRepository
-      val router = new MineSweeperAPI(new RepositoryService(repository))
+      val router = new TestTodoRouterClass(repository)
 
-      Get("/todos/pending") ~> router.route ~> check {
+      Get("/todos/pending") ~> router.todoRouter ~> check {
         status shouldBe ApiError.generic.statusCode
         val resp = responseAs[String]
         resp shouldBe ApiError.generic.message
@@ -86,5 +87,4 @@ class TodoRouterListSpec extends WordSpec with Matchers with ScalatestRouteTest 
     }
 
   }
-
 }

@@ -4,10 +4,9 @@ import akka.http.scaladsl.model.StatusCodes
 import akka.http.scaladsl.testkit.ScalatestRouteTest
 import models.Todo
 import org.scalatest.{Matchers, WordSpec}
-import repositories.{InMemoryTodoRepository, RepositoryService}
-import rest.MineSweeperAPI
+import repositories.{InMemoryTodoRepository, TodoRepository}
 import rest.entities.UpdateTodo
-import rest.resourceRouters.ApiError
+import rest.resourceRouters.{ApiError, TodoRouter}
 
 class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTest with TodoMocks {
   import de.heikoseeberger.akkahttpcirce.FailFastCirceSupport._
@@ -26,13 +25,16 @@ class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTes
     Some(true)
   )
 
+  class TestTodoRouterClass(repo: TodoRepository) extends TodoRouter { override val todoRepository = repo}
+
+
   "A TodoRouter" should {
 
     "update a todo with valid data" in {
       val repository = new InMemoryTodoRepository(Seq(testTodo))
-      val router = new MineSweeperAPI(new RepositoryService(repository))
+      val router = new TestTodoRouterClass(repository)
 
-      Put(s"/todos/$todoId", testUpdateTodo) ~> router.route ~> check {
+      Put(s"/todos/$todoId", testUpdateTodo) ~> router.todoRouter ~> check {
         status shouldBe StatusCodes.OK
         val resp = responseAs[Todo]
         resp.title shouldBe testUpdateTodo.title.get
@@ -41,11 +43,11 @@ class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTes
       }
     }
 
-    "return not found with non existent todo" in {
+    "return not found with non existent todo when updating todos" in {
       val repository = new InMemoryTodoRepository(Seq(testTodo))
-      val router = new MineSweeperAPI(new RepositoryService(repository))
+      val router = new TestTodoRouterClass(repository)
 
-      Put("/todos/1", testUpdateTodo) ~> router.route ~> check {
+      Put("/todos/1", testUpdateTodo) ~> router.todoRouter ~> check {
         status shouldBe ApiError.todoNotFound("1").statusCode
         val resp = responseAs[String]
         resp shouldBe ApiError.todoNotFound("1").message
@@ -54,9 +56,9 @@ class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTes
 
     "not update a todo with invalid data" in {
       val repository = new InMemoryTodoRepository(Seq(testTodo))
-      val router = new MineSweeperAPI(new RepositoryService(repository))
+      val router = new TestTodoRouterClass(repository)
 
-      Put(s"/todos/$todoId", testUpdateTodo.copy(title = Some(""))) ~> router.route ~> check {
+      Put(s"/todos/$todoId", testUpdateTodo.copy(title = Some(""))) ~> router.todoRouter ~> check {
         status shouldBe ApiError.emptyTitleField.statusCode
         val resp = responseAs[String]
         resp shouldBe ApiError.emptyTitleField.message
@@ -65,9 +67,9 @@ class TodoRouterUpdateSpec extends WordSpec with Matchers with ScalatestRouteTes
 
     "handle repository failure when updating todos" in {
       val repository = new FailingRepository
-      val router = new MineSweeperAPI(new RepositoryService(repository))
+      val router = new TestTodoRouterClass(repository)
 
-      Put(s"/todos/$todoId", testUpdateTodo) ~> router.route ~> check {
+      Put(s"/todos/$todoId", testUpdateTodo) ~> router.todoRouter ~> check {
         status shouldBe ApiError.generic.statusCode
         val resp = responseAs[String]
         resp shouldBe ApiError.generic.message
