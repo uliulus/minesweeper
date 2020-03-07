@@ -1,8 +1,9 @@
 package repositories
 
 import models.Todo
+import repositories.games.{GamesRepository, InMemoryGamesRepository}
 
-class RepositoryService(var todoRepository:TodoRepository)
+class RepositoryService(var todoRepository:TodoRepository, var gamesRepository:GamesRepository )
 
 object RepositoryService {
   import scala.concurrent.ExecutionContext.Implicits.global
@@ -14,7 +15,9 @@ object RepositoryService {
       Todo("3", "Buy rice", "I'm starving!", true),
     ))
 
-    new RepositoryService(todoRepository)
+    val gamesRepository = new InMemoryGamesRepository()
+
+    new RepositoryService(todoRepository, gamesRepository)
   }
 
 }
